@@ -43,17 +43,32 @@ const App = ({ signOut }) => {
   async function createNote(event) {
     event.preventDefault();
     const form = new FormData(event.target);
+    
+    // Check if the price input is greater than zero
+    const priceInput = form.get("price");
+    const price = parseFloat(priceInput);
+    
+    if (isNaN(price) || price <= 0) {
+      alert("Please enter a valid price.");
+      return;
+    }
+    
+    
     const image = form.get("image");
     const data = {
       name: form.get("name"),
       description: form.get("description"),
       image: image.name,
+      price: price,
     };
+    
     if (!!data.image) await Storage.put(data.name, image);
+    
     await API.graphql({
       query: createNoteMutation,
       variables: { input: data },
     });
+    
     fetchNotes();
     event.target.reset();
   }
@@ -85,6 +100,14 @@ const App = ({ signOut }) => {
             name="description"
             placeholder="Note Description"
             label="Note Description"
+            labelHidden
+            variation="quiet"
+            required
+          />
+          <TextField
+            name="price"
+            placeholder="Note Price"
+            label="Note Price"
             labelHidden
             variation="quiet"
             required
