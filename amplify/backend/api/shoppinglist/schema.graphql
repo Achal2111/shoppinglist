@@ -9,3 +9,4 @@ type Note {
   image: String
   price: String
 }
+

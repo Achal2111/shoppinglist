@@ -31,8 +31,7 @@ const App = ({ signOut }) => {
     await Promise.all(
       notesFromAPI.map(async (note) => {
         if (note.image) {
-          const url = await Storage.get(note.image);
- // update this line to use note.image instead of note.name
+          const url = await Storage.get(note.image, { level: "public" });
           note.image = url;
         }
         return note;
@@ -147,7 +146,6 @@ const App = ({ signOut }) => {
             <Image
             src={note.image}
             style={{ width: 300 }}
-
           />
             )}
             <Text>{note.price}</Text>
