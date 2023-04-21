@@ -74,19 +74,19 @@ const App = ({ signOut }) => {
 
   return (
     <View className="App">
-      <Heading level={1}>FoodItem</Heading>
+      <Heading level={1}>Shopping Cart</Heading>
       <View as="form" margin="3rem 0" onSubmit={createNote}>
         <Flex direction="row" justifyContent="center">
           <TextField
             name="name"
-            placeholder="Name"
+            placeholder="Name of product"
             label="Name"
             labelHidden
             variation="quiet"
             required
           />
           <TextField
-            name="description"
+            name="description of product"
             placeholder="Description"
             label="Description"
             labelHidden
@@ -95,7 +95,7 @@ const App = ({ signOut }) => {
           />
            <TextField
             name="price"
-            placeholder="Price"
+            placeholder="Price of product"
             label="Price"
             labelHidden
             variation="quiet"
@@ -112,7 +112,7 @@ const App = ({ signOut }) => {
           </Button>
         </Flex>
       </View>
-      <Heading level={2}>Current Items</Heading>
+      <Heading level={2}> Added Items in cart</Heading>
       <View margin="3rem 0">
       {notes.map((note) => (
   <Flex
