@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import "@aws-amplify/ui-react/styles.css";
-import { API, Storage } from 'aws-amplify';
+import { API, Storage } from "aws-amplify";
 import {
   Button,
   Flex,
@@ -11,8 +11,7 @@ import {
   TextField,
   View,
   withAuthenticator,
-} from '@aws-amplify/ui-react';
-
+} from "@aws-amplify/ui-react";
 import { listNotes } from "./graphql/queries";
 import {
   createNote as createNoteMutation,
@@ -32,7 +31,8 @@ const App = ({ signOut }) => {
     await Promise.all(
       notesFromAPI.map(async (note) => {
         if (note.image) {
-          const url = await Storage.get(note.name);
+          const url = await Storage.get(note.image);
+ // update this line to use note.image instead of note.name
           note.image = url;
         }
         return note;
@@ -40,22 +40,43 @@ const App = ({ signOut }) => {
     );
     setNotes(notesFromAPI);
   }
+  
 
   async function createNote(event) {
     event.preventDefault();
     const form = new FormData(event.target);
+  
+    const priceInput = form.get("price");
+    const price = parseFloat(priceInput);
+  
+    if (isNaN(price) || price <= 0) {
+      alert("Please enter a valid price.");
+      return;
+    }
+  
     const image = form.get("image");
+    let imageUrl;
+    if (image) {
+      const { key } = await Storage.put(image.name, image);
+      imageUrl = await Storage.get(key);
+    }
+  
     const data = {
       name: form.get("name"),
       description: form.get("description"),
-      image: image.name,
+      image: imageUrl,
+      price: price,
     };
-    if (!!data.image) await Storage.put(data.name, image);
-    await API.graphql({
+  
+    const newNoteData = await API.graphql({
       query: createNoteMutation,
       variables: { input: data },
     });
-    fetchNotes();
+  
+    const newNote = newNoteData.data.createNote;
+    newNote.price = price;
+  
+    setNotes(prevNotes => [newNote, ...prevNotes]);
     event.target.reset();
   }
   
@@ -69,7 +90,6 @@ const App = ({ signOut }) => {
       variables: { input: { id } },
     });
   }
-
 
   return (
     <View className="App">
@@ -92,46 +112,54 @@ const App = ({ signOut }) => {
             variation="quiet"
             required
           />
-          <View
-  name="image"
-  as="input"
-  type="file"
-  style={{ alignSelf: "end" }}
-/>
-          <Button type="submit" variation="primary">
+          <TextField
+            name="price"
+            placeholder="Note Price"
+            label="Note Price"
+            labelHidden
+            variation="quiet"
+            required
+          />
+          <input
+            name="image"
+            type="file"
+            style={{ alignSelf: "end" }}
+            />
+            <Button type="submit" variation="primary">
             Create Note
-          </Button>
-        </Flex>
-      </View>
-      <Heading level={2}>Current Notes</Heading>
-      <View margin="3rem 0">
-      {notes.map((note) => (
-  <Flex
-    key={note.id || note.name}
-    direction="row"
-    justifyContent="center"
-    alignItems="center"
-  >
-    <Text as="strong" fontWeight={700}>
-      {note.name}
-    </Text>
-    <Text as="span">{note.description}</Text>
-    {note.image && (
-      <Image
-        src={note.image}
-        alt={`visual aid for ${notes.name}`}
-        style={{ width: 400 }}
-      />
-    )}
-    <Button variation="link" onClick={() => deleteNote(note)}>
-      Delete note
-    </Button>
-  </Flex>
-))}
-      </View>
-      <Button onClick={signOut}>Sign Out</Button>
-    </View>
-  );
-};
+            </Button>
+            </Flex>
+            </View>
+            <Heading level={2}>Current Notes</Heading>
+            <View margin="3rem 0">
+            {notes.map((note) => (
+            <Flex
+            key={note.id || note.name}
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+            >
+            <Text as="strong" fontWeight={700}>
+            {note.name}
+            </Text>
+            <Text as="span">{note.description}</Text>
+            {note.image && (
+            <Image
+            src={note.image}
+            style={{ width: 300 }}
 
-export default withAuthenticator(App);
+          />
+            )}
+            <Text>{note.price}</Text>
+            <Button variation="link" onClick={() => deleteNote(note)}>
+            Delete note
+            </Button>
+            </Flex>
+            ))}
+            </View>
+            <Button onClick={signOut}>Sign Out</Button>
+            </View>
+            );
+            };
+            
+            export default withAuthenticator(App);
