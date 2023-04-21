@@ -31,8 +31,7 @@ const App = ({ signOut }) => {
     await Promise.all(
       notesFromAPI.map(async (note) => {
         if (note.image) {
-          const url = await Storage.get(note.image);
- // update this line to use note.image instead of note.name
+          const url = await Storage.get(note.name);
           note.image = url;
         }
         return note;
@@ -40,46 +39,24 @@ const App = ({ signOut }) => {
     );
     setNotes(notesFromAPI);
   }
-  
 
   async function createNote(event) {
     event.preventDefault();
     const form = new FormData(event.target);
-  
-    const priceInput = form.get("price");
-    const price = parseFloat(priceInput);
-  
-    if (isNaN(price) || price <= 0) {
-      alert("Please enter a valid price.");
-      return;
-    }
-  
     const image = form.get("image");
-    let imageUrl;
-    if (image) {
-      const { key } = await Storage.put(image.name, image);
-      imageUrl = await Storage.get(key);
-    }
-  
     const data = {
       name: form.get("name"),
       description: form.get("description"),
-      image: imageUrl,
-      price: price,
+      image: image.name,
     };
-  
-    const newNoteData = await API.graphql({
+    if (!!data.image) await Storage.put(data.name, image);
+    await API.graphql({
       query: createNoteMutation,
       variables: { input: data },
     });
-  
-    const newNote = newNoteData.data.createNote;
-    newNote.price = price;
-  
-    setNotes(prevNotes => [newNote, ...prevNotes]);
+    fetchNotes();
     event.target.reset();
   }
-  
 
   async function deleteNote({ id, name }) {
     const newNotes = notes.filter((note) => note.id !== id);
@@ -93,73 +70,73 @@ const App = ({ signOut }) => {
 
   return (
     <View className="App">
-      <Heading level={1}>My Notes App</Heading>
+      <Heading level={1}>Shopping</Heading>
       <View as="form" margin="3rem 0" onSubmit={createNote}>
         <Flex direction="row" justifyContent="center">
           <TextField
             name="name"
-            placeholder="Note Name"
-            label="Note Name"
+            placeholder="Name"
+            label="Name"
             labelHidden
             variation="quiet"
             required
           />
           <TextField
             name="description"
-            placeholder="Note Description"
-            label="Note Description"
+            placeholder="Description"
+            label="Description"
             labelHidden
             variation="quiet"
             required
           />
           <TextField
-            name="price"
-            placeholder="Note Price"
-            label="Note Price"
-            labelHidden
-            variation="quiet"
-            required
-          />
+  name="price"
+  placeholder="Price"
+  label="Price"
+  labelHidden
+  variation="quiet"
+  required
+/>
+
           <input
             name="image"
             type="file"
             style={{ alignSelf: "end" }}
-            />
-            <Button type="submit" variation="primary">
+          />
+          <Button type="submit" variation="primary">
             Create Note
-            </Button>
-            </Flex>
-            </View>
-            <Heading level={2}>Current Notes</Heading>
-            <View margin="3rem 0">
-            {notes.map((note) => (
-            <Flex
+          </Button>
+        </Flex>
+      </View>
+      <Heading level={2}>Current Notes</Heading>
+      <View margin="3rem 0">
+        {notes.map((note) => (
+          <Flex
             key={note.id || note.name}
             direction="row"
             justifyContent="center"
             alignItems="center"
-            >
+          >
             <Text as="strong" fontWeight={700}>
-            {note.name}
+              {note.name}
             </Text>
             <Text as="span">{note.description}</Text>
             {note.image && (
-            <Image
-            src={note.image}
-            style={{ width: 300 }}
-
-          />
+              <Image
+                src={note.image}
+                alt={`visual aid for ${note.name}`}
+                style={{ width: 400 }}
+              />
             )}
-            <Text>{note.price}</Text>
             <Button variation="link" onClick={() => deleteNote(note)}>
-            Delete note
+              Delete note
             </Button>
-            </Flex>
-            ))}
-            </View>
-            <Button onClick={signOut}>Sign Out</Button>
-            </View>
-            );
-            };
-            
-            export default withAuthenticator(App);
+          </Flex>
+        ))}
+        </View>
+        <Button onClick={signOut}>Sign Out</Button>
+      </View>
+    );
+  };
+  
+  export default withAuthenticator(App);
