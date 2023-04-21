@@ -12,7 +12,6 @@ import {
   View,
   withAuthenticator,
 } from '@aws-amplify/ui-react';
-
 import { listNotes } from "./graphql/queries";
 import {
   createNote as createNoteMutation,
@@ -21,10 +20,15 @@ import {
 
 const App = ({ signOut }) => {
   const [notes, setNotes] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     fetchNotes();
   }, []);
+
+  useEffect(() => {
+    calculateTotalPrice();
+  }, [notes]);
 
   async function fetchNotes() {
     const apiData = await API.graphql({ query: listNotes });
@@ -48,7 +52,7 @@ const App = ({ signOut }) => {
     const data = {
       name: form.get("name"),
       description: form.get("description"),
-      price: form.get("price"),
+      price: parseFloat(form.get("price")),
       image: image.name,
     };
     if (!!data.image) await Storage.put(data.name, image);
@@ -59,9 +63,8 @@ const App = ({ signOut }) => {
     fetchNotes();
     event.target.reset();
   }
-  
 
-  async function deleteNote({ id, name }) {
+  async function deleteNote({ id, name, price }) {
     const newNotes = notes.filter((note) => note.id !== id);
     setNotes(newNotes);
     await Storage.remove(name);
@@ -69,8 +72,13 @@ const App = ({ signOut }) => {
       query: deleteNoteMutation,
       variables: { input: { id } },
     });
+    setTotalPrice(totalPrice - price);
   }
 
+  function calculateTotalPrice() {
+    const total = notes.reduce((acc, note) => acc + note.price, 0);
+    setTotalPrice(total);
+  }
 
   return (
     <View className="App">
@@ -93,7 +101,7 @@ const App = ({ signOut }) => {
             variation="quiet"
             required
           />
-           <TextField
+          <TextField
             name="price"
             placeholder="Price of product"
             label="Price"
@@ -102,11 +110,11 @@ const App = ({ signOut }) => {
             required
           />
           <View
-  name="image"
-  as="input"
-  type="file"
-  style={{ alignSelf: "end" }}
-/>
+            name="image"
+            as="input"
+            type="file"
+            style={{ alignSelf: "end" }}
+          />
           <Button type="submit" variation="primary">
             Add Item
           </Button>
@@ -114,31 +122,32 @@ const App = ({ signOut }) => {
       </View>
       <Heading level={2}> Added Items in cart</Heading>
       <View margin="3rem 0">
-      {notes.map((note) => (
-  <Flex
-    key={note.id || note.name}
-    direction="row"
-    justifyContent="center"
-    alignItems="center"
-  >
-    <Text as="strong" fontWeight={700}>
-      {note.name}
-    </Text>
-    <Text as="span">{note.description}</Text>
-    <Text as="span">${note.price}</Text>
-    {note.image && (
-      <Image
-        src={note.image}
-        alt={`visual aid for ${notes.name}`}
-        style={{ width: 400 }}
-      />
-    )}
-    <Button variation="link" onClick={() => deleteNote(note)}>
-      Delete Item
-    </Button>
-  </Flex>
-))}
+        {notes.map((note) => (
+          <Flex
+            key={note.id || note.name}
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Text as="strong" fontWeight={700}>
+              {note.name}
+            </Text>
+            <Text as="span">{note.description}</Text>
+            <Text as="span">${note.price}</Text>
+            {note.image && (
+              <Image
+                src={note.image}
+                alt={`visual aid for ${notes.name}`}
+                style={{ width: 400 }}
+              />
+            )}
+            <Button variation="link" onClick={() => deleteNote(note)}>
+              Delete Item
+            </Button>
+          </Flex>
+        ))}
       </View>
+      <Text as="p">Total Price: ${totalPrice}</Text>
       <Button onClick={signOut}>Sign Out</Button>
     </View>
   );
