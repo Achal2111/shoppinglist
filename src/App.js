@@ -147,7 +147,7 @@ const App = ({ signOut }) => {
           </Flex>
         ))}
       </View>
-      <Text as="p">Total Price: ${totalPrice}</Text>
+      <Text as="p" fontSize="24px">Total Price: ${totalPrice}</Text>
       <Button onClick={signOut}>Sign Out</Button>
     </View>
   );
