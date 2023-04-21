@@ -121,7 +121,7 @@ const App = ({ signOut }) => {
         </Flex>
       </View>
       <View margin="3rem 0">
-      <Text as="p" fontSize="24px">Total Price: ${totalPrice}</Text>
+      <Text as="p" fontSize="24px">Total Price Of Added Items: ${totalPrice}</Text>
       <Heading level={2}> Added Items in cart</Heading>
         {notes.map((note) => (
           <Flex
