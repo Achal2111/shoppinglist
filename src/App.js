@@ -120,8 +120,9 @@ const App = ({ signOut }) => {
           </Button>
         </Flex>
       </View>
-      <Heading level={2}> Added Items in cart</Heading>
       <View margin="3rem 0">
+      <Text as="p" fontSize="24px">Total Price: ${totalPrice}</Text>
+      <Heading level={2}> Added Items in cart</Heading>
         {notes.map((note) => (
           <Flex
             key={note.id || note.name}
@@ -147,7 +148,6 @@ const App = ({ signOut }) => {
           </Flex>
         ))}
       </View>
-      <Text as="p" fontSize="24px">Total Price: ${totalPrice}</Text>
       <Button onClick={signOut}>Sign Out</Button>
     </View>
   );
