@@ -86,8 +86,8 @@ const App = ({ signOut }) => {
             required
           />
           <TextField
-            name="description of product"
-            placeholder="Description"
+            name="description"
+            placeholder="Description of product"
             label="Description"
             labelHidden
             variation="quiet"
@@ -125,7 +125,7 @@ const App = ({ signOut }) => {
       {note.name}
     </Text>
     <Text as="span">{note.description}</Text>
-    <Text as="span">{note.price}</Text>
+    <Text as="span">${note.price}</Text>
     {note.image && (
       <Image
         src={note.image}
